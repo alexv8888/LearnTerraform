@@ -1,7 +1,11 @@
+#Create a resource group for all resources
+
 resource "azurerm_resource_group" "resource_group" {
   name     = "Learn_Terraform_RG-${var.environment}"
   location = var.location
 }
+
+#Create a public IP for a frontend host
 
 resource "azurerm_public_ip" "public_ip" {
   name                = "Learn_Terraform_PublicIp-${var.environment}"
@@ -14,6 +18,8 @@ resource "azurerm_public_ip" "public_ip" {
   }
 }
 
+#Create virtual network and one subnet
+
 module "vnet" {
   source = "./modules/network"
   location = var.location
@@ -23,6 +29,8 @@ module "vnet" {
   address_space = var.address_space
   address_pref = var.address_pref
 }
+
+# Create a network security group and associate it with the subnet from the previous step
 
 resource "azurerm_network_security_group" "nsg" {
   name                = "Learn_Terraform_SecurityGroup-${var.environment}"
@@ -54,19 +62,7 @@ resource "azurerm_subnet_network_security_group_association" "nsg_association" {
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-#resource "azurerm_virtual_network" "vnet" {
-#  name                = "Learn_Terraform_VNet-${var.environment}"
-#  address_space       = var.address_space
-#  location            = var.location
-#  resource_group_name = azurerm_resource_group.resource_group.name
-#}
-#resource "azurerm_subnet" "subnet" {
-#  name                 = "internal-${var.environment}"
-#  resource_group_name  = azurerm_resource_group.resource_group.name
-#  virtual_network_name = azurerm_virtual_network.vnet.name
-#  address_prefixes     = var.address_pref
-#}
-
+# Generate admin password for the both VMs and save it in the key vault
 
 module "generate_pass" {
   source = "./modules/keyvault"
@@ -75,6 +71,7 @@ module "generate_pass" {
   environment = var.environment
 }
 
+#Create a NIC for the frontend VM
 
 resource "azurerm_network_interface" "nic-front" {
   name                = "Learn_Terraform-FrontendNic-${var.environment}"
@@ -92,6 +89,8 @@ resource "azurerm_network_interface" "nic-front" {
     environment = var.environment
   }
 }
+
+#Create a frontend VM
 
 resource "azurerm_linux_virtual_machine" "ubuntuserver-front" {
   name                            = "Learn_Terraform_FrontendVM-${var.environment}"
@@ -120,6 +119,7 @@ resource "azurerm_linux_virtual_machine" "ubuntuserver-front" {
 
 }
 
+#Create a NIC for the backend VM
 
 resource "azurerm_network_interface" "nic-back" {
   name                = "Learn_Terraform-BackendNic-${var.environment}"
@@ -136,6 +136,8 @@ resource "azurerm_network_interface" "nic-back" {
     environment = var.environment
   }
 }
+
+#Create a backend VM
 
 resource "azurerm_linux_virtual_machine" "ubuntuserver-back" {
   name                            = "Learn_Terraform_BackendVM-${var.environment}"

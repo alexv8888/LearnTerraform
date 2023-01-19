@@ -1,6 +1,7 @@
 location    = "eastus"
 vnetname = "LearnTerraformVNet"
 environment = "PROD"
+# In this NSG we allow inbound SSH and RDP and deny all outbound internet traffic except AzureMonitor services
 allowed_protocols_list = [{
   name                       = "Allow_SSH"
   priority                   = 100
