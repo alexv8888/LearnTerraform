@@ -1,4 +1,5 @@
 location    = "eastus"
+vnetname    = "LearnTerraformVNet"
 environment = "QA"
 allowed_protocols_list = [{
   name                       = "AllowSSH"
