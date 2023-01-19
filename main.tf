@@ -14,6 +14,16 @@ resource "azurerm_public_ip" "public_ip" {
   }
 }
 
+module "vnet" {
+  source = "./modules/network"
+  location = var.location
+  rgname = azurerm_resource_group.resource_group.name
+  vnetname = "Learn_Terraform_VNet-${var.environment}"
+  environment = var.environment
+  address_space = var.address_space
+  address_pref = var.address_pref
+}
+
 resource "azurerm_network_security_group" "nsg" {
   name                = "Learn_Terraform_SecurityGroup-${var.environment}"
   location            = var.location
@@ -40,22 +50,31 @@ resource "azurerm_network_security_group" "nsg" {
 
 
 resource "azurerm_subnet_network_security_group_association" "nsg_association" {
-  subnet_id                 = azurerm_subnet.subnet.id
+  subnet_id                 = module.vnet.subnet_id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-resource "azurerm_virtual_network" "vnet" {
-  name                = "Learn_Terraform_VNet-${var.environment}"
-  address_space       = var.address_space
-  location            = var.location
-  resource_group_name = azurerm_resource_group.resource_group.name
+#resource "azurerm_virtual_network" "vnet" {
+#  name                = "Learn_Terraform_VNet-${var.environment}"
+#  address_space       = var.address_space
+#  location            = var.location
+#  resource_group_name = azurerm_resource_group.resource_group.name
+#}
+#resource "azurerm_subnet" "subnet" {
+#  name                 = "internal-${var.environment}"
+#  resource_group_name  = azurerm_resource_group.resource_group.name
+#  virtual_network_name = azurerm_virtual_network.vnet.name
+#  address_prefixes     = var.address_pref
+#}
+
+
+module "generate_pass" {
+  source = "./modules/keyvault"
+  location = var.location
+  rgname = azurerm_resource_group.resource_group.name
+  environment = var.environment
 }
-resource "azurerm_subnet" "subnet" {
-  name                 = "internal-${var.environment}"
-  resource_group_name  = azurerm_resource_group.resource_group.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = var.address_pref
-}
+
 
 resource "azurerm_network_interface" "nic-front" {
   name                = "Learn_Terraform-FrontendNic-${var.environment}"
@@ -64,7 +83,7 @@ resource "azurerm_network_interface" "nic-front" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet.id
+    subnet_id                     = module.vnet.subnet_id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.public_ip.id
   }
@@ -80,7 +99,7 @@ resource "azurerm_linux_virtual_machine" "ubuntuserver-front" {
   location                        = var.location
   size                            = var.vm_size
   admin_username                  = "adminuser"
-  admin_password                  = azurerm_key_vault_secret.password.value
+  admin_password                  =  module.generate_pass.created_password                       
   disable_password_authentication = "false"
   computer_name                   = "FrontendVM-${var.environment}"
   network_interface_ids = [
@@ -109,7 +128,7 @@ resource "azurerm_network_interface" "nic-back" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet.id
+    subnet_id                     = module.vnet.subnet_id
     private_ip_address_allocation = "Dynamic"
   }
 
@@ -124,7 +143,7 @@ resource "azurerm_linux_virtual_machine" "ubuntuserver-back" {
   location                        = var.location
   size                            = var.vm_size
   admin_username                  = "adminuser"
-  admin_password                  = azurerm_key_vault_secret.password.value
+  admin_password                  = module.generate_pass.created_password 
   disable_password_authentication = "false"
   computer_name                   = "BackendVM-${var.environment}"
   network_interface_ids = [

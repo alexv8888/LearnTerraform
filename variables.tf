@@ -1,3 +1,5 @@
+variable "vnetname" {
+}
 variable "location" {
 }
 
