@@ -21,13 +21,13 @@ resource "azurerm_public_ip" "public_ip" {
 #Create virtual network and one subnet
 
 module "vnet" {
-  source = "./modules/network"
-  location = var.location
-  rgname = azurerm_resource_group.resource_group.name
-  vnetname = "Learn_Terraform_VNet-${var.environment}"
-  environment = var.environment
+  source        = "./modules/network"
+  location      = var.location
+  rgname        = azurerm_resource_group.resource_group.name
+  vnetname      = "Learn_Terraform_VNet-${var.environment}"
+  environment   = var.environment
   address_space = var.address_space
-  address_pref = var.address_pref
+  address_pref  = var.address_pref
 }
 
 # Create a network security group and associate it with the subnet from the previous step
@@ -65,9 +65,9 @@ resource "azurerm_subnet_network_security_group_association" "nsg_association" {
 # Generate admin password for the both VMs and save it in the key vault
 
 module "generate_pass" {
-  source = "./modules/keyvault"
-  location = var.location
-  rgname = azurerm_resource_group.resource_group.name
+  source      = "./modules/keyvault"
+  location    = var.location
+  rgname      = azurerm_resource_group.resource_group.name
   environment = var.environment
 }
 
@@ -98,7 +98,7 @@ resource "azurerm_linux_virtual_machine" "ubuntuserver-front" {
   location                        = var.location
   size                            = var.vm_size
   admin_username                  = "adminuser"
-  admin_password                  =  module.generate_pass.created_password                       
+  admin_password                  = module.generate_pass.created_password
   disable_password_authentication = "false"
   computer_name                   = "FrontendVM-${var.environment}"
   network_interface_ids = [
@@ -145,7 +145,7 @@ resource "azurerm_linux_virtual_machine" "ubuntuserver-back" {
   location                        = var.location
   size                            = var.vm_size
   admin_username                  = "adminuser"
-  admin_password                  = module.generate_pass.created_password 
+  admin_password                  = module.generate_pass.created_password
   disable_password_authentication = "false"
   computer_name                   = "BackendVM-${var.environment}"
   network_interface_ids = [
