@@ -1,4 +1,3 @@
 backend.sh
 **/.terraform
-**/PROD/.terraform.lock.hcl
-**/QA/.terraform.lock.hcl
+.terraform.lock.hcl
