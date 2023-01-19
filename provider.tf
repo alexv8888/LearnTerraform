@@ -5,6 +5,7 @@ terraform {
     container_name       = "backend"
     key                  = "prod.terraform.tfstate"
   }
+  
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"

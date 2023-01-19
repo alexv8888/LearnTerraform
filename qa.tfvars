@@ -7,7 +7,6 @@ allowed_protocols_list = [{
   access                     = "Allow"
   direction                  = "Inbound"
   destination_address_prefix = "*"
-
   },
   {
     name                   = "AllowRDP"
