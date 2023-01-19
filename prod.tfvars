@@ -36,7 +36,8 @@ allowed_protocols_list = [{
   }
 ]
 address_space        = ["192.168.30.0/24"]
-address_pref         = ["192.168.30.0/25"]
+address_pref_publ         = ["192.168.30.0/25"]
+address_pref_priv         = ["192.168.30.128/25"]
 vm_size              = "Standard_B1ls"
 storage_account_type = "Standard_LRS"
 source_image_sku     = "18.04-LTS"

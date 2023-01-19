@@ -22,7 +22,11 @@ variable "address_space" {
   type = list(string)
 }
 
-variable "address_pref" {
+variable "address_pref_publ" {
+  type = list(string)
+}
+
+variable "address_pref_priv" {
   type = list(string)
 }
 

@@ -18,7 +18,12 @@ variable "vnetname" {
   description = "Name of a virtual network"
 }
 
-variable "address_pref" {
+variable "address_pref_publ" {
+  type = list(string)
+  description = "Subnet ddress prefix"
+}
+
+variable "address_pref_priv" {
   type = list(string)
   description = "Subnet ddress prefix"
 }

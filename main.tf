@@ -27,7 +27,8 @@ module "vnet" {
   vnetname      = "Learn_Terraform_VNet-${var.environment}"
   environment   = var.environment
   address_space = var.address_space
-  address_pref  = var.address_pref
+  address_pref_priv  = var.address_pref_priv
+  address_pref_publ  = var.address_pref_publ
 }
 
 # Create a network security group and associate it with the subnet from the previous step
@@ -58,7 +59,7 @@ resource "azurerm_network_security_group" "nsg" {
 
 
 resource "azurerm_subnet_network_security_group_association" "nsg_association" {
-  subnet_id                 = module.vnet.subnet_id
+  subnet_id                 = module.vnet.public_subnet_id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
@@ -80,7 +81,7 @@ resource "azurerm_network_interface" "nic-front" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = module.vnet.subnet_id
+    subnet_id                     = module.vnet.public_subnet_id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.public_ip.id
   }
@@ -128,7 +129,7 @@ resource "azurerm_network_interface" "nic-back" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = module.vnet.subnet_id
+    subnet_id                     = module.vnet.private_subnet_id
     private_ip_address_allocation = "Dynamic"
   }
 
