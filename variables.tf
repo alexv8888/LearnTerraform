@@ -1,3 +1,5 @@
+variable "vnetname" {
+}
 variable "location" {
 }
 
@@ -6,9 +8,12 @@ variable "environment" {
 
 variable "allowed_protocols_list" {
   type = list(object({
-    name                   = string
-    priority               = number
-    destination_port_range = string
+    name                       = string
+    priority                   = number
+    access                     = string
+    direction                  = string
+    destination_port_range     = string
+    destination_address_prefix = string
 
   }))
 }

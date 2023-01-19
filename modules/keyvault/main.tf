@@ -1,9 +1,11 @@
-data "azurerm_client_config" "current" {}
+data "azurerm_client_config" "current" {
+
+}
 
 resource "azurerm_key_vault" "kv" {
 
   name                = "LearnTerraformKV-${var.environment}"
-  resource_group_name = azurerm_resource_group.resource_group.name
+  resource_group_name = var.rgname
   tenant_id           = data.azurerm_client_config.current.tenant_id
   location            = var.location
   sku_name            = "standard"

@@ -14,6 +14,16 @@ resource "azurerm_public_ip" "public_ip" {
   }
 }
 
+module "vnet" {
+  source = "./modules/network"
+  location = var.location
+  rgname = azurerm_resource_group.resource_group.name
+  vnetname = "Learn_Terraform_VNet-${var.environment}"
+  environment = var.environment
+  address_space = var.address_space
+  address_pref = var.address_pref
+}
+
 resource "azurerm_network_security_group" "nsg" {
   name                = "Learn_Terraform_SecurityGroup-${var.environment}"
   location            = var.location
@@ -40,49 +50,40 @@ resource "azurerm_network_security_group" "nsg" {
 
 
 resource "azurerm_subnet_network_security_group_association" "nsg_association" {
-  subnet_id                 = module.network.vnet_subnets[0]
+  subnet_id                 = module.vnet.subnet_id
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-#resource "azurerm_virtual_network" "virtual_network" {
+#resource "azurerm_virtual_network" "vnet" {
 #  name                = "Learn_Terraform_VNet-${var.environment}"
 #  address_space       = var.address_space
 #  location            = var.location
 #  resource_group_name = azurerm_resource_group.resource_group.name
 #}
-
 #resource "azurerm_subnet" "subnet" {
 #  name                 = "internal-${var.environment}"
 #  resource_group_name  = azurerm_resource_group.resource_group.name
-#  virtual_network_name = azurerm_virtual_network.virtual_network.name
+#  virtual_network_name = azurerm_virtual_network.vnet.name
 #  address_prefixes     = var.address_pref
 #}
 
 
-module "network" {
-  source              = "Azure/network/azurerm"
-  version             = "5.0.0"
-  resource_group_name = azurerm_resource_group.resource_group.name
-  use_for_each        = true
-  address_spaces      = var.address_space
-  subnet_prefixes     = var.address_pref
-  vnet_name           = "Learn_Terraform_VNet-${var.environment}"
-  subnet_names        = ["internal-${var.environment}"]
-  tags = {
-    environment = var.environment
-  }
-
-  depends_on = [azurerm_resource_group.resource_group]
+module "generate_pass" {
+  source = "./modules/keyvault"
+  location = var.location
+  rgname = azurerm_resource_group.resource_group.name
+  environment = var.environment
 }
 
-resource "azurerm_network_interface" "nic" {
-  name                = "Learn_Terraform-nic-${var.environment}"
+
+resource "azurerm_network_interface" "nic-front" {
+  name                = "Learn_Terraform-FrontendNic-${var.environment}"
   location            = var.location
   resource_group_name = azurerm_resource_group.resource_group.name
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = module.network.vnet_subnets[0]
+    subnet_id                     = module.vnet.subnet_id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.public_ip.id
   }
@@ -92,17 +93,61 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-resource "azurerm_linux_virtual_machine" "UbuntuServer" {
-  name                            = "Learn_Terraform_Server-${var.environment}"
+resource "azurerm_linux_virtual_machine" "ubuntuserver-front" {
+  name                            = "Learn_Terraform_FrontendVM-${var.environment}"
   resource_group_name             = azurerm_resource_group.resource_group.name
   location                        = var.location
   size                            = var.vm_size
   admin_username                  = "adminuser"
-  admin_password                  = azurerm_key_vault_secret.password.value
+  admin_password                  =  module.generate_pass.created_password                       
   disable_password_authentication = "false"
-  computer_name                   = "host-${var.environment}"
+  computer_name                   = "FrontendVM-${var.environment}"
   network_interface_ids = [
-    azurerm_network_interface.nic.id,
+    azurerm_network_interface.nic-front.id,
+  ]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = var.storage_account_type
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = var.source_image_sku
+    version   = "latest"
+  }
+
+}
+
+
+resource "azurerm_network_interface" "nic-back" {
+  name                = "Learn_Terraform-BackendNic-${var.environment}"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.resource_group.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = module.vnet.subnet_id
+    private_ip_address_allocation = "Dynamic"
+  }
+
+  tags = {
+    environment = var.environment
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "ubuntuserver-back" {
+  name                            = "Learn_Terraform_BackendVM-${var.environment}"
+  resource_group_name             = azurerm_resource_group.resource_group.name
+  location                        = var.location
+  size                            = var.vm_size
+  admin_username                  = "adminuser"
+  admin_password                  = module.generate_pass.created_password 
+  disable_password_authentication = "false"
+  computer_name                   = "BackendVM-${var.environment}"
+  network_interface_ids = [
+    azurerm_network_interface.nic-back.id,
   ]
 
   os_disk {
