@@ -1,0 +1,25 @@
+terraform init \
+    -reconfigure \
+    -backend-config="resource_group_name=terraform_backend" \
+    -backend-config="storage_account_name=backend2246" \
+    -backend-config="container_name=backend" \
+    -backend-config="key=prod.terraform.tfstate"
+
+terraform plan -var-file="prod.tfvars"
+
+terraform apply -var-file="prod.tfvars"
+    
+######################################################################## 
+########################################################################   
+    
+terraform init \
+    -reconfigure \
+    -backend-config="resource_group_name=terraform_backend" \
+    -backend-config="storage_account_name=backend2246" \
+    -backend-config="container_name=backend" \
+    -backend-config="key=qa.terraform.tfstate"
+    
+    
+terraform plan -var-file="qa.tfvars"
+
+terraform apply -var-file="qa.tfvars"
