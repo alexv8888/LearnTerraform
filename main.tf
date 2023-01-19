@@ -18,17 +18,17 @@ resource "azurerm_public_ip" "public_ip" {
   }
 }
 
-#Create virtual network and one subnet
+#Create virtual network and subnets
 
 module "vnet" {
-  source        = "./modules/network"
-  location      = var.location
-  rgname        = azurerm_resource_group.resource_group.name
-  vnetname      = "Learn_Terraform_VNet-${var.environment}"
-  environment   = var.environment
-  address_space = var.address_space
-  address_pref_priv  = var.address_pref_priv
-  address_pref_publ  = var.address_pref_publ
+  source            = "./modules/network"
+  location          = var.location
+  rgname            = azurerm_resource_group.resource_group.name
+  vnetname          = "Learn_Terraform_VNet-${var.environment}"
+  environment       = var.environment
+  address_space     = var.address_space
+  address_pref_priv = var.address_pref_priv
+  address_pref_publ = var.address_pref_publ
 }
 
 # Create a network security group and associate it with the subnet from the previous step

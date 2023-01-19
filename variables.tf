@@ -1,10 +1,12 @@
-variable "vnetname" {
-}
+#Common variables
+
 variable "location" {
 }
 
 variable "environment" {
 }
+
+#NSG variables
 
 variable "allowed_protocols_list" {
   type = list(object({
@@ -18,6 +20,11 @@ variable "allowed_protocols_list" {
   }))
 }
 
+#Virtual network variables
+
+variable "vnetname" {
+}
+
 variable "address_space" {
   type = list(string)
 }
@@ -29,6 +36,8 @@ variable "address_pref_publ" {
 variable "address_pref_priv" {
   type = list(string)
 }
+
+#VM variables
 
 variable "vm_size" {
 }
