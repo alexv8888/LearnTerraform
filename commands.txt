@@ -1,8 +1,4 @@
 terraform init \
-<<<<<<< HEAD
-    -reconfigure \
-=======
->>>>>>> 75cea382f834c4fd4510cad95312462620e8b233
     -backend-config="resource_group_name=terraform_backend" \
     -backend-config="storage_account_name=backend2246" \
     -backend-config="container_name=backend" \
@@ -16,10 +12,6 @@ terraform apply -var-file="prod.tfvars"
 ########################################################################   
     
 terraform init \
-<<<<<<< HEAD
-    -reconfigure \
-=======
->>>>>>> 75cea382f834c4fd4510cad95312462620e8b233
     -backend-config="resource_group_name=terraform_backend" \
     -backend-config="storage_account_name=backend2246" \
     -backend-config="container_name=backend" \
